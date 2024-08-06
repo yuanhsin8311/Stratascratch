@@ -8,22 +8,26 @@ The percentage change column will be populated from the 2nd month forward and ca
 ((this month's revenue - last month's revenue) / last month's revenue)*100.
 -----------------------------------------------------------------*/
 
+SELECT to_char(created_at::date, 'YYYY-MM') AS year_month,
+       round(((sum(value) - lag(sum(value), 1) OVER w) / (lag(sum(value), 1) OVER w)) * 100, 2) AS revenue_diff_pct
+FROM sf_transactions
+GROUP BY year_month 
+WINDOW w AS (
+                                 ORDER BY to_char(created_at::date, 'YYYY-MM'))
+ORDER BY year_month ASC
 
-SELECT t.year_month, 
-ROUND(
-((t.CURRENT_REV-t.PREV_REV)/t.PREV_REV )*100,2) AS reveue_diff_pct
-FROM (
+WITH BASE AS (
 SELECT 
 TO_CHAR(created_at::date,'YYYY-MM') AS year_month,
 SUM(VALUE) AS CURRENT_REV,
 LAG(SUM(VALUE),1) OVER(ORDER BY TO_CHAR(created_at::date,'YYYY-MM')) AS PREV_REV
 FROM sf_transactions
-GROUP BY 1
-) t
 
 
 
 
+
+)
 
 
                                  ORDER BY to_char(created_at::date, 'YYYY-MM'))
